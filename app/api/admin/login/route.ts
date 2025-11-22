@@ -24,7 +24,11 @@ export async function POST(request: Request) {
         response.cookies.set('admin_session', 'true', { httpOnly: true, path: '/' })
 
         return response
-    } catch (error) {
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    } catch (error: any) {
+        console.error('Login Error:', error);
+        return NextResponse.json({
+            error: 'Internal Server Error',
+            details: error.message || String(error)
+        }, { status: 500 })
     }
 }

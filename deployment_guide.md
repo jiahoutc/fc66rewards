@@ -1,10 +1,3 @@
-# Deployment Guide: Connecting Your Custom Domain
-
-Since your application is built with **Next.js**, the best and easiest way to host it and connect your custom domain is using **Vercel** (the creators of Next.js).
-
-## Prerequisites
-1.  A **GitHub** account.
-2.  A **Vercel** account (free for hobby projects).
 3.  Access to your **Domain Registrar** (where you bought your domain, e.g., GoDaddy, Namecheap).
 
 ---

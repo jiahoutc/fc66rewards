@@ -18,11 +18,12 @@ model Admin {
 }
 
 model User {
-  id             String   @id // Customer ID (manual input)
+  id             String        @id // Customer ID (manual input)
   password       String
-  isClaimed      Boolean  @default(false)
-  assignedReward String?  // Name of the reward
-  createdAt      DateTime @default(now())
+  isClaimed      Boolean       @default(false)
+  assignedReward String?       // Name of the reward
+  playedGame     GameCategory? // Which game they played
+  createdAt      DateTime      @default(now())
 }
 
 model Config {
@@ -31,8 +32,16 @@ model Config {
 }
 
 model Reward {
-  id        String   @id @default(uuid())
+  id        String       @id @default(uuid())
   name      String
   imageUrl  String?
-  createdAt DateTime @default(now())
+  category  GameCategory @default(BOX)
+  createdAt DateTime     @default(now())
+}
+
+enum GameCategory {
+  BOX
+  WHEEL
+  PLINKO
+  SCRATCH
 }

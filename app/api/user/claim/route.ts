@@ -6,6 +6,10 @@ export async function POST(request: Request) {
         const body = await request.json()
         const { id, category } = body // category is optional, defaults to BOX
 
+        if (!id) {
+            return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+        }
+
         // Verify user exists and hasn't claimed
         const user = await prisma.user.findUnique({
             where: { id },

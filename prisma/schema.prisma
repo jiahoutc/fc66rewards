@@ -18,11 +18,13 @@ model Admin {
 }
 
 model User {
-  id             String        @id // Customer ID (manual input)
+  id             String        @id @unique // Customer ID (manual input)
   password       String
-  isClaimed      Boolean       @default(false)
+  isClaimed      Boolean       @default(false) // Kept for legacy, but we'll use credits now
+  credits        Int           @default(1)     // New: Number of times user can play
   assignedReward String?       // Name of the reward
   playedGame     GameCategory? // Which game they played
+  claims         Claim[]       // New: Relation to claim history
   createdAt      DateTime      @default(now())
 }
 
@@ -32,11 +34,21 @@ model Config {
 }
 
 model Reward {
-  id        String       @id @default(uuid())
+  id        String       @id @default(cuid())
   name      String
   imageUrl  String?
   category  GameCategory @default(BOX)
+  stock     Int          @default(1)      // New: Quantity available (-1 for infinite)
   createdAt DateTime     @default(now())
+}
+
+model Claim {
+  id         String       @id @default(cuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewardName String
+  category   GameCategory
+  createdAt  DateTime     @default(now())
 }
 
 enum GameCategory {

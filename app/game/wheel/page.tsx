@@ -54,7 +54,8 @@ export default function WheelGame() {
         })
 
         if (!res.ok) {
-            alert('Error claiming reward')
+            const errorData = await res.json()
+            alert(errorData.error || 'Error claiming reward')
             setSpinning(false)
             return
         }

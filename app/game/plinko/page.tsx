@@ -55,7 +55,8 @@ export default function PlinkoGame() {
         })
 
         if (!res.ok) {
-            alert('Error claiming reward')
+            const errorData = await res.json()
+            alert(errorData.error || 'Error claiming reward')
             setPlaying(false)
             return
         }

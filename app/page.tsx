@@ -20,7 +20,7 @@ export default function Home() {
     })
 
     if (res.ok) {
-      router.push('/claim')
+      router.push('/lobby')
     } else {
       setError('Invalid ID or Password')
     }

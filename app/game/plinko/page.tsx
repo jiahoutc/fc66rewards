@@ -197,12 +197,26 @@ export default function PlinkoGame() {
                 />
 
                 {!playing && !result && (
-                    <button
-                        onClick={dropBall}
-                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-8 py-4 bg-gradient-to-r from-gold to-yellow-600 text-black font-bold text-xl rounded-full shadow-lg hover:scale-105 transition-transform border-2 border-white"
-                    >
-                        DROP BALL
-                    </button>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                        {user.credits > 0 ? (
+                            <button
+                                onClick={dropBall}
+                                className="px-8 py-4 bg-gradient-to-r from-gold to-yellow-600 text-black font-bold text-xl rounded-full shadow-lg hover:scale-105 transition-transform border-2 border-white"
+                            >
+                                DROP BALL ({user.credits} Left)
+                            </button>
+                        ) : (
+                            <div className="bg-black/80 p-6 rounded-xl border border-red-500">
+                                <p className="text-red-500 font-bold text-xl mb-2">No Credits Left</p>
+                                <button
+                                    onClick={() => router.push('/lobby')}
+                                    className="text-sm text-gray-400 hover:text-white underline"
+                                >
+                                    Return to Lobby
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
 
@@ -221,12 +235,25 @@ export default function PlinkoGame() {
 
                         <h3 className="text-2xl font-bold text-gold mb-8">{result.name}</h3>
 
-                        <button
-                            onClick={() => router.push('/lobby')}
-                            className="bg-gold text-black font-bold py-3 px-8 rounded-full hover:bg-yellow-400 transition-colors"
-                        >
-                            Back to Lobby
-                        </button>
+                        <div className="flex flex-col gap-3">
+                            {user.credits > 0 && (
+                                <button
+                                    onClick={() => {
+                                        setResult(null)
+                                        // Optional: fetchUser() to ensure sync, though we updated local state
+                                    }}
+                                    className="bg-gold text-black font-bold py-3 px-8 rounded-full hover:bg-yellow-400 transition-colors"
+                                >
+                                    Play Again ({user.credits} Left)
+                                </button>
+                            )}
+                            <button
+                                onClick={() => router.push('/lobby')}
+                                className="text-gray-400 hover:text-white transition-colors"
+                            >
+                                Back to Lobby
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

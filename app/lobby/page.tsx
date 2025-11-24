@@ -16,7 +16,8 @@ export default function Lobby() {
     const fetchUser = async () => {
         const res = await fetch('/api/user/me')
         if (res.ok) {
-            setUser(await res.json())
+            const data = await res.json()
+            setUser(data.user)
         } else {
             router.push('/')
         }

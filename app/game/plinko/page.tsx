@@ -24,10 +24,10 @@ export default function PlinkoGame() {
     const fetchUser = async () => {
         const res = await fetch('/api/user/me')
         if (res.ok) {
-            const userData = await res.json()
-            setUser(userData)
-            if (userData.isClaimed) {
-                setResult({ name: userData.assignedReward })
+            const data = await res.json()
+            setUser(data.user)
+            if (data.user.isClaimed) {
+                setResult({ name: data.user.assignedReward })
             }
         } else {
             router.push('/')

@@ -9,6 +9,7 @@ export default function PlinkoGame() {
     const [playing, setPlaying] = useState(false)
     const [result, setResult] = useState<any>(null)
     const canvasRef = useRef<HTMLCanvasElement>(null)
+    const isPlayingRef = useRef(false)
     const router = useRouter()
 
     // Configuration
@@ -37,63 +38,198 @@ export default function PlinkoGame() {
     const fetchRewards = async () => {
         const res = await fetch('/api/rewards')
         if (res.ok) {
+            const allRewards = await res.json()
+            const plinkoRewards = allRewards.filter((r: any) => r.category === 'PLINKO')
+            setRewards(plinkoRewards)
+        }
+    }
+
+    const dropBall = async () => {
+        if (isPlayingRef.current || result || !user) return
+        setPlaying(true)
+        isPlayingRef.current = true
+
+        // 1. Securely claim reward
+        const res = await fetch('/api/user/claim', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: user.id, category: 'PLINKO' }),
+        })
+
+        if (!res.ok) {
+            const errorData = await res.json()
+            alert(errorData.error || 'Error claiming reward')
+            setPlaying(false)
+            isPlayingRef.current = false
+            return
         }
 
-        if (!user) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>
+        const data = await res.json()
+        setUser(data.user) // Update user state (claimed)
+        const wonReward = data.reward
 
-        return (
-            <div className="min-h-screen bg-zinc-900 flex flex-col items-center justify-center overflow-hidden relative">
-                <button
-                    onClick={() => router.push('/lobby')}
-                    className="absolute top-4 left-4 text-gray-400 hover:text-white z-20"
-                >
-                    ← Back to Lobby
-                </button>
+        // 2. Determine target slot
+        const targetSlotIndex = Math.floor(Math.random() * SLOT_COUNT)
 
-                <h1 className="text-4xl font-bold text-gold mb-4 z-10 drop-shadow-lg">Plinko</h1>
+        animateBall(targetSlotIndex, wonReward)
+    }
 
-                <div className="relative bg-black/50 border-4 border-gold rounded-xl p-4 shadow-[0_0_30px_rgba(255,215,0,0.2)]">
-                    <canvas
-                        ref={canvasRef}
-                        width={600}
-                        height={600}
-                        className="bg-zinc-900 rounded-lg"
-                    />
+    const animateBall = (targetSlotIndex: number, wonReward: any) => {
+        const canvas = canvasRef.current
+        if (!canvas) return
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
 
-                    {!playing && !result && (
-                        <button
-                            onClick={dropBall}
-                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-8 py-4 bg-gradient-to-r from-gold to-yellow-600 text-black font-bold text-xl rounded-full shadow-lg hover:scale-105 transition-transform border-2 border-white"
-                        >
-                            DROP BALL
-                        </button>
-                    )}
-                </div>
+        const width = canvas.width
+        const height = canvas.height
 
-                {/* Result Modal */}
-                {result && !playing && (
-                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
-                        <div className="bg-zinc-900 border-2 border-gold p-8 rounded-2xl text-center max-w-md mx-4 shadow-[0_0_50px_rgba(255,215,0,0.5)]">
-                            <h2 className="text-3xl font-bold text-white mb-4">Plinko!</h2>
-                            <p className="text-gray-400 mb-6">The ball landed on:</p>
+        // Physics / Animation State
+        let ballX = width / 2
+        let ballY = 50
+        let velocityY = 0
+        let velocityX = 0
+        const gravity = 0.5
+        const bounce = 0.6
 
-                            <div className="text-5xl mb-6 animate-bounce-slight">
-                                {result.imageUrl ? (
-                                    <img src={result.imageUrl} alt={result.name} className="w-32 h-32 mx-auto object-contain" />
-                                ) : '🎁'}
-                            </div>
+        const slotWidth = width / SLOT_COUNT
+        const targetX = (targetSlotIndex * slotWidth) + (slotWidth / 2)
 
-                            <h3 className="text-2xl font-bold text-gold mb-8">{result.name}</h3>
+        const animate = () => {
+            if (!isPlayingRef.current) return
 
-                            <button
-                                onClick={() => router.push('/lobby')}
-                                className="bg-gold text-black font-bold py-3 px-8 rounded-full hover:bg-yellow-400 transition-colors"
-                            >
-                                Back to Lobby
-                            </button>
-                        </div>
-                    </div>
+            ctx.clearRect(0, 0, width, height)
+
+            // Draw Pegs
+            ctx.fillStyle = '#FFD700' // Gold
+            for (let row = 0; row < ROWS; row++) {
+                const pegsInThisRow = row % 2 === 0 ? PEGS_PER_ROW : PEGS_PER_ROW - 1
+                const rowWidth = pegsInThisRow * 40 // spacing
+                const startX = (width - rowWidth) / 2
+
+                for (let i = 0; i < pegsInThisRow; i++) {
+                    const pegX = startX + i * 40
+                    const pegY = 100 + row * 40
+
+                    ctx.beginPath()
+                    ctx.arc(pegX, pegY, 4, 0, Math.PI * 2)
+                    ctx.fill()
+
+                    // Collision detection
+                    const dx = ballX - pegX
+                    const dy = ballY - pegY
+                    const distance = Math.sqrt(dx * dx + dy * dy)
+
+                    if (distance < 14) {
+                        velocityY = -velocityY * bounce
+                        velocityX += (dx / distance) * 2
+
+                        // "Magnet" effect
+                        if (ballY < height - 100) {
+                            if (ballX < targetX) velocityX += 0.2
+                            else velocityX -= 0.2
+                        }
+                    }
+                }
+            }
+
+            // Draw Slots
+            for (let i = 0; i < SLOT_COUNT; i++) {
+                ctx.fillStyle = i % 2 === 0 ? '#222' : '#333'
+                ctx.fillRect(i * slotWidth, height - 40, slotWidth, 40)
+                ctx.strokeStyle = '#444'
+                ctx.strokeRect(i * slotWidth, height - 40, slotWidth, 40)
+
+                // Draw "Prize" text
+                ctx.fillStyle = '#666'
+                ctx.font = '10px Arial'
+                ctx.textAlign = 'center'
+                ctx.fillText('PRIZE', (i * slotWidth) + (slotWidth / 2), height - 15)
+            }
+
+            // Update Ball Physics
+            velocityY += gravity
+            ballY += velocityY
+            ballX += velocityX
+
+            // Wall collisions
+            if (ballX < 10 || ballX > width - 10) velocityX = -velocityX
+
+            // Draw Ball
+            ctx.fillStyle = '#ff0055' // Neon Pink
+            ctx.beginPath()
+            ctx.arc(ballX, ballY, 10, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.shadowBlur = 10
+            ctx.shadowColor = '#ff0055'
+
+            // Check if landed
+            if (ballY >= height - 50) {
+                setResult(wonReward)
+                setPlaying(false)
+                isPlayingRef.current = false
+            } else {
+                requestAnimationFrame(animate)
+            }
+        }
+
+        animate()
+    }
+
+    if (!user) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>
+
+    return (
+        <div className="min-h-screen bg-zinc-900 flex flex-col items-center justify-center overflow-hidden relative">
+            <button
+                onClick={() => router.push('/lobby')}
+                className="absolute top-4 left-4 text-gray-400 hover:text-white z-20"
+            >
+                ← Back to Lobby
+            </button>
+
+            <h1 className="text-4xl font-bold text-gold mb-4 z-10 drop-shadow-lg">Plinko</h1>
+
+            <div className="relative bg-black/50 border-4 border-gold rounded-xl p-4 shadow-[0_0_30px_rgba(255,215,0,0.2)]">
+                <canvas
+                    ref={canvasRef}
+                    width={600}
+                    height={600}
+                    className="bg-zinc-900 rounded-lg"
+                />
+
+                {!playing && !result && (
+                    <button
+                        onClick={dropBall}
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-8 py-4 bg-gradient-to-r from-gold to-yellow-600 text-black font-bold text-xl rounded-full shadow-lg hover:scale-105 transition-transform border-2 border-white"
+                    >
+                        DROP BALL
+                    </button>
                 )}
             </div>
-        )
-    }
+
+            {/* Result Modal */}
+            {result && !playing && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-zinc-900 border-2 border-gold p-8 rounded-2xl text-center max-w-md mx-4 shadow-[0_0_50px_rgba(255,215,0,0.5)]">
+                        <h2 className="text-3xl font-bold text-white mb-4">Plinko!</h2>
+                        <p className="text-gray-400 mb-6">The ball landed on:</p>
+
+                        <div className="text-5xl mb-6 animate-bounce-slight">
+                            {result.imageUrl ? (
+                                <img src={result.imageUrl} alt={result.name} className="w-32 h-32 mx-auto object-contain" />
+                            ) : '🎁'}
+                        </div>
+
+                        <h3 className="text-2xl font-bold text-gold mb-8">{result.name}</h3>
+
+                        <button
+                            onClick={() => router.push('/lobby')}
+                            className="bg-gold text-black font-bold py-3 px-8 rounded-full hover:bg-yellow-400 transition-colors"
+                        >
+                            Back to Lobby
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}

@@ -21,16 +21,16 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Name is required' }, { status: 400 })
         }
 
-        const reward = await prisma.reward.create({
-            data: {
-                name,
+        data: {
+            name,
                 imageUrl,
                 category: category || 'BOX',
+                    stock: body.stock || 1,
             },
-        })
+    })
 
-        return NextResponse.json(reward)
-    } catch (error) {
-        return NextResponse.json({ error: 'Error creating reward' }, { status: 500 })
-    }
+    return NextResponse.json(reward)
+} catch (error) {
+    return NextResponse.json({ error: 'Error creating reward' }, { status: 500 })
+}
 }

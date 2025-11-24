@@ -89,6 +89,7 @@ export default function AdminDashboard() {
     }
 
     const [newRewardCategory, setNewRewardCategory] = useState('BOX')
+    const [newRewardStock, setNewRewardStock] = useState(1)
 
     const handleCreateReward = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -97,13 +98,15 @@ export default function AdminDashboard() {
             body: JSON.stringify({
                 name: newRewardName,
                 imageUrl: newRewardImage,
-                category: newRewardCategory
+                category: newRewardCategory,
+                stock: newRewardStock
             }),
         })
         if (res.ok) {
             setNewRewardName('')
             setNewRewardImage('')
             setNewRewardCategory('BOX')
+            setNewRewardStock(1)
             fetchRewards()
         }
     }
@@ -177,6 +180,7 @@ export default function AdminDashboard() {
                                 <thead className="bg-zinc-800 text-gray-400">
                                     <tr>
                                         <th className="p-4">ID</th>
+                                        <th className="p-4">Credits</th>
                                         <th className="p-4">Status</th>
                                         <th className="p-4">Reward</th>
                                         <th className="p-4">Actions</th>
@@ -186,6 +190,7 @@ export default function AdminDashboard() {
                                     {users.map((user) => (
                                         <tr key={user.id} className="border-t border-zinc-800">
                                             <td className="p-4">{user.id}</td>
+                                            <td className="p-4">{user.credits}</td>
                                             <td className="p-4">
                                                 <span className={`px-2 py-1 rounded text-xs ${user.isClaimed ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'}`}>
                                                     {user.isClaimed ? 'Claimed' : 'Pending'}
@@ -256,6 +261,16 @@ export default function AdminDashboard() {
                                         className="input w-full"
                                     />
                                 </div>
+                                <div className="w-24">
+                                    <label className="block text-xs text-gray-400 mb-1">Stock</label>
+                                    <input
+                                        type="number"
+                                        placeholder="1"
+                                        className="input w-full"
+                                        value={newRewardStock}
+                                        onChange={(e) => setNewRewardStock(parseInt(e.target.value))}
+                                    />
+                                </div>
                                 <div className="w-32">
                                     <label className="block text-xs text-gray-400 mb-1">Category</label>
                                     <select
@@ -281,6 +296,9 @@ export default function AdminDashboard() {
                                             <h3 className="font-bold">{reward.name}</h3>
                                             <span className="text-[10px] bg-zinc-800 px-2 py-0.5 rounded text-gray-400 border border-zinc-700">
                                                 {reward.category}
+                                            </span>
+                                            <span className="text-[10px] bg-blue-900/30 text-blue-400 px-2 py-0.5 rounded border border-blue-900">
+                                                Stock: {reward.stock}
                                             </span>
                                         </div>
                                         {reward.imageUrl && <p className="text-xs text-gray-500 truncate max-w-[200px]">{reward.imageUrl}</p>}

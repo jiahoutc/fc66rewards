@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
@@ -21,10 +21,10 @@ model User {
   id             String        @id @unique // Customer ID (manual input)
   password       String
   isClaimed      Boolean       @default(false) // Kept for legacy, but we'll use credits now
-  credits        Int           @default(1)     // New: Number of times user can play
-  assignedReward String?       // Name of the reward
+  credits        Int           @default(1) // New: Number of times user can play
+  assignedReward String? // Name of the reward
   playedGame     GameCategory? // Which game they played
-  claims         Claim[]       // New: Relation to claim history
+  claims         Claim[] // New: Relation to claim history
   createdAt      DateTime      @default(now())
 }
 
@@ -38,7 +38,7 @@ model Reward {
   name      String
   imageUrl  String?
   category  GameCategory @default(BOX)
-  stock     Int          @default(1)      // New: Quantity available (-1 for infinite)
+  stock     Int          @default(1) // New: Quantity available (-1 for infinite)
   createdAt DateTime     @default(now())
 }
 

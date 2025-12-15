@@ -30,6 +30,7 @@ export async function POST(request: Request) {
                 imageUrl,
                 category: categoryToUse as any, // Cast to any to avoid strict enum mismatch during build
                 stock: body.stock || 1,
+                price: body.price || 1, // Default price 1 credit
             },
         })
 

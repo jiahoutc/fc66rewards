@@ -64,14 +64,30 @@ export async function POST(request: Request) {
         }
 
 
-        // 4. Transaction: Decrement Credits, Decrement Stock, Create Claim, Update Assignment
+        // 4. Transaction: Decrement Credits (Price), Decrement Stock, Create Claim, Update Assignment, Log History
+        const price = targetReward.price || 1 // Default to 1 if no price set
+
+        // Validation: credits >= price
+        if (user.credits < price) {
+            return NextResponse.json({ error: `Not enough credits. Reward costs ${price}, you have ${user.credits}` }, { status: 403 })
+        }
+
         await prisma.$transaction([
-            // Decrement User Credits
+            // Decrement User Credits by Price
             prisma.user.update({
                 where: { id },
-                data: { credits: { decrement: 1 } }
+                data: { credits: { decrement: price } }
             }),
-            // Decrement Reward Stock (if not infinite AND not previously assigned - usually assigned rewards are pre-reserved, but lets stick to simple logic: stock drops on claim)
+            // Create Credit History (Spend)
+            prisma.creditHistory.create({
+                data: {
+                    userId: id,
+                    amount: -price,
+                    type: 'SPEND',
+                    description: `Claimed ${targetReward.name} (${targetReward.category})`
+                }
+            }),
+            // Decrement Reward Stock (if not infinite AND not previously assigned)
             ...(targetReward.stock !== -1 ? [
                 prisma.reward.update({
                     where: { id: targetReward.id },
@@ -96,7 +112,7 @@ export async function POST(request: Request) {
                     }
                 })
             ] : []),
-            // Update Legacy Fields (Optional, for backward compatibility)
+            // Update Legacy Fields
             prisma.user.update({
                 where: { id },
                 data: {

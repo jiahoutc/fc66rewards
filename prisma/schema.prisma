@@ -26,6 +26,7 @@ model User {
   playedGame     GameCategory? // Which game they played
   claims         Claim[] // New: Relation to claim history
   assignments    RewardAssignment[] // New: Specific reward assignments
+  creditHistory  CreditHistory[] // New: Credit transaction history
   createdAt      DateTime      @default(now())
 }
 
@@ -40,6 +41,7 @@ model Reward {
   imageUrl  String?
   category  GameCategory @default(BOX)
   stock     Int          @default(1)
+  price     Int          @default(1) // New: Cost in credits to claim
   gameSettings Json?     // New: Game-specific settings (e.g. probability, color)
   assignments RewardAssignment[] // New: Relation to assignments
   createdAt DateTime     @default(now())
@@ -63,6 +65,22 @@ model RewardAssignment {
   status     AssignmentStatus @default(ASSIGNED)
   assignedAt DateTime         @default(now())
   claimedAt  DateTime?
+}
+
+model CreditHistory {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Int        // Positive for add, Negative for spend
+  type        CreditType
+  description String?    // e.g. "Admin Top-up", "Played Lucky Wheel"
+  createdAt   DateTime   @default(now())
+}
+
+enum CreditType {
+  ADMIN_ADJUSTMENT
+  SPEND
+  REFUND
 }
 
 enum AssignmentStatus {

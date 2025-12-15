@@ -151,166 +151,225 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* ... (users tab remains same) */}
-                {activeTab === 'users' && (
-                    <div>
-                        {/* ... (user content) */}
-                        <div className="mb-8 bg-zinc-900 p-6 rounded-lg">
-                            <h2 className="text-lg font-bold mb-4">Create New User</h2>
-                            <form onSubmit={handleCreateUser} className="flex gap-4">
-                                <input
-                                    placeholder="Customer ID"
-                                    value={newUserId}
-                                    onChange={(e) => setNewUserId(e.target.value)}
-                                    className="input flex-1"
-                                    required
-                                />
-                                <input
-                                    placeholder="Password"
-                                    value={newUserPassword}
-                                    onChange={(e) => setNewUserPassword(e.target.value)}
-                                    className="input flex-1"
-                                    required
-                                />
-                                <button type="submit" className="btn btn-primary">Create</button>
-                            </form>
-                        </div>
-
-                        <div className="bg-zinc-900 rounded-lg overflow-hidden">
-                            <table className="w-full text-left">
-                                <thead className="bg-zinc-800 text-gray-400">
-                                    <tr>
-                                        <th className="p-4">ID</th>
-                                        <th className="p-4">Credits</th>
-                                        <th className="p-4">Status</th>
-                                        <th className="p-4">Reward</th>
-                                        <th className="p-4">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {users.map((user) => (
-                                        <tr key={user.id} className="border-t border-zinc-800">
-                                            <td className="p-4">{user.id}</td>
-                                            <td className="p-4">{user.credits}</td>
-                                            <td className="p-4">
-                                                <span className={`px-2 py-1 rounded text-xs ${user.isClaimed ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'}`}>
-                                                    {user.isClaimed ? 'Claimed' : 'Pending'}
-                                                </span>
-                                            </td>
-                                            <td className="p-4">{user.assignedReward || '-'}</td>
-                                            <td className="p-4 flex gap-2">
-                                                <button onClick={() => handleResetUser(user.id)} className="text-sm text-blue-400 hover:underline">Reset</button>
-                                                <button onClick={() => handleDeleteUser(user.id)} className="text-sm text-red-400 hover:underline">Delete</button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-
-                {/* ... (config tab remains same) */}
-                {activeTab === 'config' && (
-                    <div className="bg-zinc-900 p-6 rounded-lg max-w-2xl">
-                        <h2 className="text-lg font-bold mb-6">Site Configuration</h2>
-                        <form onSubmit={handleUpdateConfig} className="space-y-4">
-                            <div>
-                                <label className="block text-sm text-gray-400 mb-1">Background Image URL</label>
-                                <input
-                                    value={bgUrl}
-                                    onChange={(e) => setBgUrl(e.target.value)}
-                                    className="input"
-                                    placeholder="https://example.com/bg.jpg"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm text-gray-400 mb-1">Background Music URL</label>
-                                <input
-                                    value={musicUrl}
-                                    onChange={(e) => setMusicUrl(e.target.value)}
-                                    className="input"
-                                    placeholder="https://example.com/music.mp3"
-                                />
-                            </div>
-                            <button type="submit" className="btn btn-primary">Save Changes</button>
-                        </form>
-                    </div>
-                )}
-
-                {activeTab === 'rewards' && (
-                    <div>
-                        <div className="mb-8 bg-zinc-900 p-6 rounded-lg">
-                            <h2 className="text-lg font-bold mb-4">Add New Reward</h2>
-                            <form onSubmit={handleCreateReward} className="flex gap-4 items-end">
-                                <div className="flex-1">
-                                    <label className="block text-xs text-gray-400 mb-1">Name</label>
+                {/* Content Area */}
+                <div className="bg-zinc-900 rounded-lg p-6 min-h-[500px]">
+                    {activeTab === 'users' && (
+                        <div>
+                            {/* ... (user content) */}
+                            <div className="mb-8 bg-zinc-800 p-6 rounded-lg border border-zinc-700">
+                                <h2 className="text-lg font-bold mb-4 text-white">Create New User</h2>
+                                <form onSubmit={handleCreateUser} className="flex gap-4">
                                     <input
-                                        placeholder="Reward Name"
-                                        value={newRewardName}
-                                        onChange={(e) => setNewRewardName(e.target.value)}
-                                        className="input w-full"
+                                        placeholder="Customer ID"
+                                        value={newUserId}
+                                        onChange={(e) => setNewUserId(e.target.value)}
+                                        className="input flex-1 bg-zinc-900 border-zinc-600"
                                         required
                                     />
-                                </div>
-                                <div className="flex-1">
-                                    <label className="block text-xs text-gray-400 mb-1">Image URL</label>
                                     <input
-                                        placeholder="Image URL (Optional)"
-                                        value={newRewardImage}
-                                        onChange={(e) => setNewRewardImage(e.target.value)}
-                                        className="input w-full"
+                                        placeholder="Password"
+                                        value={newUserPassword}
+                                        onChange={(e) => setNewUserPassword(e.target.value)}
+                                        className="input flex-1 bg-zinc-900 border-zinc-600"
+                                        required
                                     />
-                                </div>
-                                <div className="w-24">
-                                    <label className="block text-xs text-gray-400 mb-1">Stock</label>
+                                    <button type="submit" className="btn btn-primary whitespace-nowrap">Create User</button>
+                                </form>
+                            </div>
+
+                            <div className="bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700">
+                                <table className="w-full text-left">
+                                    <thead className="bg-zinc-900 text-gray-400">
+                                        <tr>
+                                            <th className="p-4">ID</th>
+                                            <th className="p-4">Credits</th>
+                                            <th className="p-4">Status</th>
+                                            <th className="p-4">Reward</th>
+                                            <th className="p-4">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {users.map((user) => (
+                                            <tr key={user.id} className="border-t border-zinc-700 hover:bg-zinc-900/50">
+                                                <td className="p-4 font-mono text-gold">{user.id}</td>
+                                                <td className="p-4">{user.credits}</td>
+                                                <td className="p-4">
+                                                    <span className={`px-2 py-1 rounded text-xs border ${user.isClaimed
+                                                        ? 'bg-green-900/30 text-green-400 border-green-800'
+                                                        : 'bg-yellow-900/30 text-yellow-400 border-yellow-800'}`}>
+                                                        {user.isClaimed ? 'Claimed' : 'Pending'}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4 text-gray-300">{user.assignedReward || '-'}</td>
+                                                <td className="p-4 flex gap-3">
+                                                    <button onClick={() => handleResetUser(user.id)} className="text-sm text-blue-400 hover:text-blue-300 hover:underline">Reset</button>
+                                                    <button onClick={() => handleDeleteUser(user.id)} className="text-sm text-red-400 hover:text-red-300 hover:underline">Delete</button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'config' && (
+                        <div className="max-w-2xl">
+                            <h2 className="text-xl font-bold mb-6 text-gold">Site Configuration</h2>
+                            <form onSubmit={handleUpdateConfig} className="space-y-6">
+                                <div>
+                                    <label className="block text-sm text-gray-400 mb-2">Background Image URL</label>
                                     <input
-                                        type="number"
-                                        placeholder="1"
-                                        className="input w-full"
-                                        value={newRewardStock}
-                                        onChange={(e) => setNewRewardStock(parseInt(e.target.value))}
+                                        value={bgUrl}
+                                        onChange={(e) => setBgUrl(e.target.value)}
+                                        className="input w-full bg-zinc-800 border-zinc-700 focus:border-gold"
+                                        placeholder="https://example.com/bg.jpg"
                                     />
+                                    <p className="text-xs text-gray-500 mt-1">URL to the main background image.</p>
                                 </div>
-                                <div className="w-32">
-                                    <label className="block text-xs text-gray-400 mb-1">Category</label>
-                                    <select
-                                        value={newRewardCategory}
-                                        onChange={(e) => setNewRewardCategory(e.target.value)}
-                                        className="input w-full"
-                                    >
-                                        <option value="BOX">Box</option>
-                                        <option value="WHEEL">Wheel</option>
-                                        <option value="PLINKO">Plinko</option>
-                                        <option value="SCRATCH">Scratch</option>
-                                    </select>
+                                <div>
+                                    <label className="block text-sm text-gray-400 mb-2">Background Music URL</label>
+                                    <input
+                                        value={musicUrl}
+                                        onChange={(e) => setMusicUrl(e.target.value)}
+                                        className="input w-full bg-zinc-800 border-zinc-700 focus:border-gold"
+                                        placeholder="https://example.com/music.mp3"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">URL to an MP3 file to play in the background.</p>
                                 </div>
-                                <button type="submit" className="btn btn-primary">Add</button>
+                                <button type="submit" className="btn btn-primary px-8">Save Changes</button>
                             </form>
                         </div>
+                    )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {rewards.map((reward) => (
-                                <div key={reward.id} className="bg-zinc-900 p-4 rounded-lg border border-zinc-800 flex justify-between items-center">
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-bold">{reward.name}</h3>
-                                            <span className="text-[10px] bg-zinc-800 px-2 py-0.5 rounded text-gray-400 border border-zinc-700">
-                                                {reward.category}
-                                            </span>
-                                            <span className="text-[10px] bg-blue-900/30 text-blue-400 px-2 py-0.5 rounded border border-blue-900">
-                                                Stock: {reward.stock}
-                                            </span>
-                                        </div>
-                                        {reward.imageUrl && <p className="text-xs text-gray-500 truncate max-w-[200px]">{reward.imageUrl}</p>}
-                                    </div>
-                                    <button onClick={() => handleDeleteReward(reward.id)} className="text-red-400 hover:text-red-300">
-                                        Delete
+                    {/* Reward Management Tabs */}
+                    {(activeTab === 'rewards' || activeTab === 'box' || activeTab === 'wheel' || activeTab === 'plinko' || activeTab === 'scratch') && (
+                        <div>
+                            {/* Sub-tabs for Games */}
+                            <div className="flex gap-2 mb-6 bg-zinc-800 p-1 rounded-lg inline-flex">
+                                {[
+                                    { id: 'BOX', label: '📦 Mystery Box' },
+                                    { id: 'WHEEL', label: '🎡 Lucky Wheel' },
+                                    { id: 'PLINKO', label: '🎱 Plinko' },
+                                    { id: 'SCRATCH', label: '🎫 Scratch Card' }
+                                ].map((game) => (
+                                    <button
+                                        key={game.id}
+                                        onClick={() => setNewRewardCategory(game.id)}
+                                        className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${newRewardCategory === game.id
+                                                ? 'bg-zinc-700 text-white shadow-md'
+                                                : 'text-gray-400 hover:text-white hover:bg-zinc-700/50'
+                                            }`}
+                                    >
+                                        {game.label}
                                     </button>
+                                ))}
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                {/* Left Column: Add Form */}
+                                <div className="lg:col-span-1">
+                                    <div className="bg-zinc-800 p-6 rounded-lg border border-gold/20 sticky top-6">
+                                        <h2 className="text-lg font-bold mb-4 text-gold border-b border-zinc-700 pb-2">
+                                            Add {newRewardCategory} Reward
+                                        </h2>
+                                        <form onSubmit={handleCreateReward} className="space-y-4">
+                                            <div>
+                                                <label className="block text-xs text-gray-400 mb-1">Reward Name</label>
+                                                <input
+                                                    placeholder="e.g. $50 Bonus"
+                                                    value={newRewardName}
+                                                    onChange={(e) => setNewRewardName(e.target.value)}
+                                                    className="input w-full bg-zinc-900 border-zinc-700"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs text-gray-400 mb-1">Image URL (Optional)</label>
+                                                <input
+                                                    placeholder="https://..."
+                                                    value={newRewardImage}
+                                                    onChange={(e) => setNewRewardImage(e.target.value)}
+                                                    className="input w-full bg-zinc-900 border-zinc-700"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs text-gray-400 mb-1">Stock Amount (-1 for Infinite)</label>
+                                                <input
+                                                    type="number"
+                                                    placeholder="1"
+                                                    className="input w-full bg-zinc-900 border-zinc-700"
+                                                    value={newRewardStock}
+                                                    onChange={(e) => setNewRewardStock(parseInt(e.target.value))}
+                                                />
+                                            </div>
+
+                                            {/* Game Specific Settings Placeholder */}
+                                            {newRewardCategory === 'WHEEL' && (
+                                                <div className="p-3 bg-zinc-900/50 rounded border border-zinc-700/50">
+                                                    <p className="text-xs text-gray-500 mb-2">Wheel Settings (Coming Soon)</p>
+                                                    <div className="flex gap-2">
+                                                        <div className="w-6 h-6 rounded-full bg-red-500"></div>
+                                                        <div className="w-6 h-6 rounded-full bg-black border border-white"></div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <button type="submit" className="btn btn-primary w-full py-3 mt-2">
+                                                Add Reward
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
-                            ))}
+
+                                {/* Right Column: List */}
+                                <div className="lg:col-span-2">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {rewards
+                                            .filter(r => r.category === newRewardCategory)
+                                            .map((reward) => (
+                                                <div key={reward.id} className="bg-zinc-800 p-4 rounded-lg border border-zinc-700 flex justify-between items-center group hover:border-zinc-500 transition-colors">
+                                                    <div className="flex items-center gap-3">
+                                                        {reward.imageUrl ? (
+                                                            <img src={reward.imageUrl} alt={reward.name} className="w-10 h-10 object-contain bg-black/50 rounded p-1" />
+                                                        ) : (
+                                                            <div className="w-10 h-10 bg-zinc-700 rounded flex items-center justify-center text-xl">🎁</div>
+                                                        )}
+                                                        <div>
+                                                            <h3 className="font-bold text-white">{reward.name}</h3>
+                                                            <div className="flex gap-2 mt-1">
+                                                                <span className={`text-[10px] px-2 py-0.5 rounded border ${reward.stock > 0
+                                                                        ? 'bg-blue-900/30 text-blue-400 border-blue-900'
+                                                                        : reward.stock === -1
+                                                                            ? 'bg-purple-900/30 text-purple-400 border-purple-900'
+                                                                            : 'bg-red-900/30 text-red-400 border-red-900'
+                                                                    }`}>
+                                                                    {reward.stock === -1 ? '∞ Infinite' : `Stock: ${reward.stock}`}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteReward(reward.id)}
+                                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-700 text-red-400 hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                                                        title="Delete Reward"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                            ))}
+
+                                        {rewards.filter(r => r.category === newRewardCategory).length === 0 && (
+                                            <div className="col-span-full py-12 text-center text-gray-500 bg-zinc-800/50 rounded-lg border border-dashed border-zinc-700">
+                                                No rewards configured for {newRewardCategory} yet.
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     )

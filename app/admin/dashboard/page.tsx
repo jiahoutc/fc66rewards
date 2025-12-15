@@ -95,7 +95,6 @@ export default function AdminDashboard() {
     }
 
     const [newRewardCategory, setNewRewardCategory] = useState('BOX')
-    const [newRewardCategory, setNewRewardCategory] = useState('BOX')
     const [newRewardStock, setNewRewardStock] = useState(1)
     const [newRewardPrice, setNewRewardPrice] = useState(1)
 
@@ -107,7 +106,6 @@ export default function AdminDashboard() {
                 name: newRewardName,
                 imageUrl: newRewardImage,
                 category: newRewardCategory,
-                category: newRewardCategory,
                 stock: newRewardStock,
                 price: newRewardPrice
             }),
@@ -115,7 +113,6 @@ export default function AdminDashboard() {
         if (res.ok) {
             setNewRewardName('')
             setNewRewardImage('')
-            setNewRewardCategory('BOX')
             setNewRewardCategory('BOX')
             setNewRewardStock(1)
             setNewRewardPrice(1)

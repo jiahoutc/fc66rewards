@@ -135,6 +135,14 @@ export default function AdminDashboard() {
         if (res.ok) fetchRewards()
     }
 
+    const handleUpdateGameMode = async (id: string, cost: number, enabled: boolean) => {
+        const res = await fetch('/api/admin/gamemodes', {
+            method: 'PUT',
+            body: JSON.stringify({ id, cost, enabled })
+        })
+        if (res.ok) fetchGameModes()
+    }
+
     const handleOpenCreditModal = async (user: any) => {
         setSelectedUserForCredits(user)
         setCreditAdjustmentAmount(0)
@@ -189,7 +197,7 @@ export default function AdminDashboard() {
             <div className="container mx-auto p-6">
                 {/* ... (tabs remain same) */}
                 <div className="flex gap-4 mb-8 border-b border-zinc-800 pb-1">
-                    {['users', 'config', 'rewards'].map((tab) => (
+                    {['users', 'config', 'rewards', 'games'].map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}

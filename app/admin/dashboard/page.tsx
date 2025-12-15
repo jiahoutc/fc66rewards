@@ -20,6 +20,12 @@ export default function AdminDashboard() {
     const [newRewardName, setNewRewardName] = useState('')
     const [newRewardImage, setNewRewardImage] = useState('')
 
+    // Credit Modal States
+    const [selectedUserForCredits, setSelectedUserForCredits] = useState<any>(null)
+    const [creditAdjustmentAmount, setCreditAdjustmentAmount] = useState(0)
+    const [creditHistory, setCreditHistory] = useState<any[]>([])
+    const [creditDescription, setCreditDescription] = useState('Admin adjustment')
+
     useEffect(() => {
         fetchUsers()
         fetchConfig()
@@ -89,7 +95,9 @@ export default function AdminDashboard() {
     }
 
     const [newRewardCategory, setNewRewardCategory] = useState('BOX')
+    const [newRewardCategory, setNewRewardCategory] = useState('BOX')
     const [newRewardStock, setNewRewardStock] = useState(1)
+    const [newRewardPrice, setNewRewardPrice] = useState(1)
 
     const handleCreateReward = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -99,14 +107,18 @@ export default function AdminDashboard() {
                 name: newRewardName,
                 imageUrl: newRewardImage,
                 category: newRewardCategory,
-                stock: newRewardStock
+                category: newRewardCategory,
+                stock: newRewardStock,
+                price: newRewardPrice
             }),
         })
         if (res.ok) {
             setNewRewardName('')
             setNewRewardImage('')
             setNewRewardCategory('BOX')
+            setNewRewardCategory('BOX')
             setNewRewardStock(1)
+            setNewRewardPrice(1)
             fetchRewards()
         }
     }
@@ -117,6 +129,44 @@ export default function AdminDashboard() {
             method: 'DELETE',
         })
         if (res.ok) fetchRewards()
+    }
+
+    const handleOpenCreditModal = async (user: any) => {
+        setSelectedUserForCredits(user)
+        setCreditAdjustmentAmount(0)
+        // Fetch history
+        const res = await fetch(`/api/admin/credits?userId=${user.id}`)
+        if (res.ok) {
+            const data = await res.json()
+            setCreditHistory(data.history || [])
+        }
+    }
+
+    const handleAdjustCredits = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!selectedUserForCredits) return
+
+        const res = await fetch('/api/admin/credits', {
+            method: 'POST',
+            body: JSON.stringify({
+                userId: selectedUserForCredits.id,
+                amount: creditAdjustmentAmount,
+                description: creditDescription
+            })
+        })
+
+        if (res.ok) {
+            // Refresh user list to see new balance
+            fetchUsers()
+            // Refresh history
+            const histRes = await fetch(`/api/admin/credits?userId=${selectedUserForCredits.id}`)
+            if (histRes.ok) {
+                const data = await histRes.json()
+                setCreditHistory(data.history || [])
+            }
+            setCreditAdjustmentAmount(0)
+            setCreditDescription('Admin adjustment')
+        }
     }
 
     const handleLogout = () => {
@@ -204,6 +254,7 @@ export default function AdminDashboard() {
                                                 <td className="p-4 flex gap-3">
                                                     <button onClick={() => handleResetUser(user.id)} className="text-sm text-blue-400 hover:text-blue-300 hover:underline">Reset</button>
                                                     <button onClick={() => handleDeleteUser(user.id)} className="text-sm text-red-400 hover:text-red-300 hover:underline">Delete</button>
+                                                    <button onClick={() => handleOpenCreditModal(user)} className="text-sm text-gold hover:text-yellow-300 hover:underline ml-2">Credits</button>
                                                 </td>
                                             </tr>
                                         ))}
@@ -257,8 +308,8 @@ export default function AdminDashboard() {
                                         key={game.id}
                                         onClick={() => setNewRewardCategory(game.id)}
                                         className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${newRewardCategory === game.id
-                                                ? 'bg-zinc-700 text-white shadow-md'
-                                                : 'text-gray-400 hover:text-white hover:bg-zinc-700/50'
+                                            ? 'bg-zinc-700 text-white shadow-md'
+                                            : 'text-gray-400 hover:text-white hover:bg-zinc-700/50'
                                             }`}
                                     >
                                         {game.label}
@@ -303,6 +354,16 @@ export default function AdminDashboard() {
                                                     onChange={(e) => setNewRewardStock(parseInt(e.target.value))}
                                                 />
                                             </div>
+                                            <div>
+                                                <label className="block text-xs text-gray-400 mb-1">Price (Credits)</label>
+                                                <input
+                                                    type="number"
+                                                    placeholder="1"
+                                                    className="input w-full bg-zinc-900 border-zinc-700"
+                                                    value={newRewardPrice}
+                                                    onChange={(e) => setNewRewardPrice(parseInt(e.target.value))}
+                                                />
+                                            </div>
 
                                             {/* Game Specific Settings Placeholder */}
                                             {newRewardCategory === 'WHEEL' && (
@@ -339,12 +400,15 @@ export default function AdminDashboard() {
                                                             <h3 className="font-bold text-white">{reward.name}</h3>
                                                             <div className="flex gap-2 mt-1">
                                                                 <span className={`text-[10px] px-2 py-0.5 rounded border ${reward.stock > 0
-                                                                        ? 'bg-blue-900/30 text-blue-400 border-blue-900'
-                                                                        : reward.stock === -1
-                                                                            ? 'bg-purple-900/30 text-purple-400 border-purple-900'
-                                                                            : 'bg-red-900/30 text-red-400 border-red-900'
+                                                                    ? 'bg-blue-900/30 text-blue-400 border-blue-900'
+                                                                    : reward.stock === -1
+                                                                        ? 'bg-purple-900/30 text-purple-400 border-purple-900'
+                                                                        : 'bg-red-900/30 text-red-400 border-red-900'
                                                                     }`}>
                                                                     {reward.stock === -1 ? '∞ Infinite' : `Stock: ${reward.stock}`}
+                                                                </span>
+                                                                <span className="text-[10px] px-2 py-0.5 rounded border bg-yellow-900/30 text-yellow-400 border-yellow-900">
+                                                                    Price: {reward.price || 1}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -371,6 +435,85 @@ export default function AdminDashboard() {
                     )}
                 </div>
             </div>
+
+            {/* Credit Management Modal */}
+            {selectedUserForCredits && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+                    <div className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl border border-gold/30 shadow-2xl">
+                        <div className="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
+                            <h2 className="text-xl font-bold text-white">Manage Credits: <span className="text-gold">{selectedUserForCredits.id}</span></h2>
+                            <button onClick={() => setSelectedUserForCredits(null)} className="text-gray-400 hover:text-white">✕</button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Left: Adjustment Form */}
+                            <div>
+                                <h3 className="text-sm font-bold text-gray-400 mb-4 uppercase tracking-wider">Top Up / Deduct</h3>
+                                <div className="bg-zinc-800/50 p-4 rounded border border-zinc-700">
+                                    <p className="text-sm text-gray-400 mb-2">Current Balance: <span className="text-white font-mono text-lg">{users.find(u => u.id === selectedUserForCredits.id)?.credits}</span></p>
+                                    <form onSubmit={handleAdjustCredits} className="space-y-4">
+                                        <div>
+                                            <label className="block text-xs text-gray-500 mb-1">Amount (Negative to deduct)</label>
+                                            <input
+                                                type="number"
+                                                value={creditAdjustmentAmount}
+                                                onChange={(e) => setCreditAdjustmentAmount(parseInt(e.target.value))}
+                                                className="input w-full bg-zinc-900 border-zinc-700"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-gray-500 mb-1">Reason</label>
+                                            <input
+                                                value={creditDescription}
+                                                onChange={(e) => setCreditDescription(e.target.value)}
+                                                className="input w-full bg-zinc-900 border-zinc-700"
+                                            />
+                                        </div>
+                                        <button type="submit" className="btn btn-primary w-full">Apply Adjustment</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            {/* Right: History */}
+                            <div>
+                                <h3 className="text-sm font-bold text-gray-400 mb-4 uppercase tracking-wider">Transaction History</h3>
+                                <div className="bg-zinc-800/50 rounded border border-zinc-700 h-[300px] overflow-y-auto custom-scrollbar">
+                                    <table className="w-full text-left text-sm">
+                                        <thead className="sticky top-0 bg-zinc-800 text-gray-500">
+                                            <tr>
+                                                <th className="p-2">Amt</th>
+                                                <th className="p-2">Type</th>
+                                                <th className="p-2">Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {creditHistory.map((item) => (
+                                                <tr key={item.id} className="border-t border-zinc-700/50 hover:bg-zinc-700/20">
+                                                    <td className={`p-2 font-mono ${item.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                        {item.amount > 0 ? '+' : ''}{item.amount}
+                                                    </td>
+                                                    <td className="p-2">
+                                                        <div className="font-bold text-[10px] text-gray-300">{item.type}</div>
+                                                        <div className="text-[10px] text-gray-500 truncate max-w-[100px]" title={item.description}>{item.description}</div>
+                                                    </td>
+                                                    <td className="p-2 text-gray-500 text-[10px]">
+                                                        {new Date(item.createdAt).toLocaleDateString()}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {creditHistory.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={3} className="p-4 text-center text-gray-600">No history found</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

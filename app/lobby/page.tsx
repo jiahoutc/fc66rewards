@@ -33,7 +33,7 @@ export default function Lobby() {
             id: 'box',
             name: 'Mystery Box',
             description: 'Open a box to reveal your fortune!',
-            path: '/claim', // Keeping existing path for now
+            path: '/claim',
             color: 'from-purple-600 to-blue-600',
             icon: '🎁'
         },
@@ -71,7 +71,36 @@ export default function Lobby() {
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
             }}
-                    </button>
+        >
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-0"></div>
+
+            <div className="relative z-10 w-full max-w-4xl">
+                <header className="flex justify-between items-center mb-12">
+                    <div>
+                        <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-300 to-gold drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]">
+                            GAME LOBBY
+                        </h1>
+                        <p className="text-gray-300 mt-2">Welcome, <span className="text-gold">{user?.id}</span></p>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        {/* Credits Display */}
+                        {user && (
+                            <div className="bg-zinc-800 px-4 py-2 rounded-full border border-gold/30">
+                                <span className="text-gold font-bold">{user.credits} Credits</span>
+                            </div>
+                        )}
+                        <button
+                            onClick={() => {
+                                document.cookie = 'user_session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+                                router.push('/')
+                            }}
+                            className="px-4 py-2 rounded border border-red-500/50 text-red-400 hover:bg-red-500/10 transition-colors"
+                        >
+                            Logout
+                        </button>
+                    </div>
                 </header>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -102,7 +131,7 @@ export default function Lobby() {
                         </button>
                     ))}
                 </div>
-            </div >
-        </div >
+            </div>
+        </div>
     )
 }

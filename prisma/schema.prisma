@@ -25,6 +25,7 @@ model User {
   assignedReward String? // Name of the reward
   playedGame     GameCategory? // Which game they played
   claims         Claim[] // New: Relation to claim history
+  assignments    RewardAssignment[] // New: Specific reward assignments
   createdAt      DateTime      @default(now())
 }
 
@@ -40,6 +41,7 @@ model Reward {
   category  GameCategory @default(BOX)
   stock     Int          @default(1)
   gameSettings Json?     // New: Game-specific settings (e.g. probability, color)
+  assignments RewardAssignment[] // New: Relation to assignments
   createdAt DateTime     @default(now())
 }
 
@@ -50,6 +52,23 @@ model Claim {
   rewardName String
   category   GameCategory
   createdAt  DateTime     @default(now())
+}
+
+model RewardAssignment {
+  id         String           @id @default(cuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewardId   String
+  reward     Reward           @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+  status     AssignmentStatus @default(ASSIGNED)
+  assignedAt DateTime         @default(now())
+  claimedAt  DateTime?
+}
+
+enum AssignmentStatus {
+  ASSIGNED
+  CLAIMED
+  EXPIRED
 }
 
 enum GameCategory {

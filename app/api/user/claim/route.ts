@@ -24,36 +24,57 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'No credits remaining' }, { status: 403 })
         }
 
-        // 2. Get available rewards (Stock > 0 or -1)
-        const targetCategory = category || 'BOX'
-        const rewards = await prisma.reward.findMany({
+        // 2. Check for SPECIFIC ASSIGNMENT first
+        const assignment = await prisma.rewardAssignment.findFirst({
             where: {
-                category: targetCategory,
-                OR: [
-                    { stock: { gt: 0 } },
-                    { stock: -1 }
-                ]
+                userId: id,
+                status: 'ASSIGNED'
+            },
+            include: {
+                reward: true
             }
         })
 
-        if (rewards.length === 0) {
-            return NextResponse.json({ error: `No rewards available for ${targetCategory}` }, { status: 500 })
+        let targetReward: any = null
+        let isAssigned = false
+
+        if (assignment) {
+            targetReward = assignment.reward
+            isAssigned = true
+        } else {
+            // 3. Logic for Random Reward
+            // Get available rewards (Stock > 0 or -1)
+            const targetCategory = category || 'BOX'
+            const rewards = await prisma.reward.findMany({
+                where: {
+                    category: targetCategory as any,
+                    OR: [
+                        { stock: { gt: 0 } },
+                        { stock: -1 }
+                    ]
+                }
+            })
+
+            if (rewards.length === 0) {
+                return NextResponse.json({ error: `No rewards available for ${targetCategory}` }, { status: 500 })
+            }
+
+            // Pick random reward
+            targetReward = rewards[Math.floor(Math.random() * rewards.length)]
         }
 
-        // 3. Pick random reward
-        const randomReward = rewards[Math.floor(Math.random() * rewards.length)]
 
-        // 4. Transaction: Decrement Credits, Decrement Stock, Create Claim
+        // 4. Transaction: Decrement Credits, Decrement Stock, Create Claim, Update Assignment
         await prisma.$transaction([
             // Decrement User Credits
             prisma.user.update({
                 where: { id },
                 data: { credits: { decrement: 1 } }
             }),
-            // Decrement Reward Stock (if not infinite)
-            ...(randomReward.stock !== -1 ? [
+            // Decrement Reward Stock (if not infinite AND not previously assigned - usually assigned rewards are pre-reserved, but lets stick to simple logic: stock drops on claim)
+            ...(targetReward.stock !== -1 ? [
                 prisma.reward.update({
-                    where: { id: randomReward.id },
+                    where: { id: targetReward.id },
                     data: { stock: { decrement: 1 } }
                 })
             ] : []),
@@ -61,22 +82,32 @@ export async function POST(request: Request) {
             prisma.claim.create({
                 data: {
                     userId: id,
-                    rewardName: randomReward.name,
-                    category: targetCategory
+                    rewardName: targetReward.name,
+                    category: targetReward.category
                 }
             }),
+            // If it was an assignment, mark it as CLAIMED
+            ...(isAssigned ? [
+                prisma.rewardAssignment.update({
+                    where: { id: assignment!.id },
+                    data: {
+                        status: 'CLAIMED',
+                        claimedAt: new Date()
+                    }
+                })
+            ] : []),
             // Update Legacy Fields (Optional, for backward compatibility)
             prisma.user.update({
                 where: { id },
                 data: {
                     isClaimed: true,
-                    assignedReward: randomReward.name,
-                    playedGame: targetCategory
+                    assignedReward: targetReward.name,
+                    playedGame: targetReward.category
                 }
             })
         ])
 
-        return NextResponse.json({ success: true, reward: randomReward })
+        return NextResponse.json({ success: true, reward: targetReward })
 
         return NextResponse.json({ success: true, reward: randomReward })
     } catch (error: any) {

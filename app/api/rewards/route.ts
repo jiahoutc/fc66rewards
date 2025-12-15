@@ -21,11 +21,14 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Name is required' }, { status: 400 })
         }
 
+        const validCategories = ['BOX', 'WHEEL', 'PLINKO', 'SCRATCH']
+        const categoryToUse = validCategories.includes(category) ? category : 'BOX'
+
         const reward = await prisma.reward.create({
             data: {
                 name,
                 imageUrl,
-                category: category || 'BOX',
+                category: categoryToUse as any, // Cast to any to avoid strict enum mismatch during build
                 stock: body.stock || 1,
             },
         })

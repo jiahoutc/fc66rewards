@@ -38,7 +38,8 @@ model Reward {
   name      String
   imageUrl  String?
   category  GameCategory @default(BOX)
-  stock     Int          @default(1) // New: Quantity available (-1 for infinite)
+  stock     Int          @default(1)
+  gameSettings Json?     // New: Game-specific settings (e.g. probability, color)
   createdAt DateTime     @default(now())
 }
 

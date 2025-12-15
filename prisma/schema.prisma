@@ -77,6 +77,14 @@ model CreditHistory {
   createdAt   DateTime   @default(now())
 }
 
+model GameMode {
+  id        String       @id @default(cuid())
+  category  GameCategory @unique
+  cost      Int          @default(0)
+  enabled   Boolean      @default(true)
+  updatedAt DateTime     @updatedAt
+}
+
 enum CreditType {
   ADMIN_ADJUSTMENT
   SPEND

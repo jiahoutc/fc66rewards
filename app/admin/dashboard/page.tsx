@@ -11,6 +11,7 @@ export default function AdminDashboard() {
     const [users, setUsers] = useState<any[]>([])
     const [config, setConfig] = useState<any>({})
     const [rewards, setRewards] = useState<any[]>([])
+    const [gameModes, setGameModes] = useState<any[]>([]) // New: Game Mode State
 
     // Form States
     const [newUserId, setNewUserId] = useState('')
@@ -30,7 +31,13 @@ export default function AdminDashboard() {
         fetchUsers()
         fetchConfig()
         fetchRewards()
+        fetchGameModes()
     }, [])
+
+    const fetchGameModes = async () => {
+        const res = await fetch('/api/admin/gamemodes')
+        if (res.ok) setGameModes(await res.json())
+    }
 
     const fetchUsers = async () => {
         const res = await fetch('/api/admin/users')

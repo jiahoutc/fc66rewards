@@ -102,7 +102,8 @@ export default function AdminDashboard() {
     }
 
     const [newRewardCategory, setNewRewardCategory] = useState('BOX')
-    const [newRewardStock, setNewRewardStock] = useState(1)
+    // Default stock to -1 (Infinite) as requested
+    const newRewardStock = -1
 
     const handleCreateReward = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -119,7 +120,6 @@ export default function AdminDashboard() {
             setNewRewardName('')
             setNewRewardImage('')
             setNewRewardCategory('BOX')
-            setNewRewardStock(1)
             fetchRewards()
         }
     }
@@ -353,16 +353,6 @@ export default function AdminDashboard() {
                                                     className="input w-full bg-zinc-900 border-zinc-700"
                                                 />
                                             </div>
-                                            <div>
-                                                <label className="block text-xs text-gray-400 mb-1">Stock Amount (-1 for Infinite)</label>
-                                                <input
-                                                    type="number"
-                                                    placeholder="1"
-                                                    className="input w-full bg-zinc-900 border-zinc-700"
-                                                    value={newRewardStock}
-                                                    onChange={(e) => setNewRewardStock(parseInt(e.target.value))}
-                                                />
-                                            </div>
 
                                             {/* Game Specific Settings Placeholder */}
                                             {newRewardCategory === 'WHEEL' && (
@@ -397,16 +387,11 @@ export default function AdminDashboard() {
                                                         )}
                                                         <div>
                                                             <h3 className="font-bold text-white">{reward.name}</h3>
-                                                            <div className="flex gap-2 mt-1">
-                                                                <span className={`text-[10px] px-2 py-0.5 rounded border ${reward.stock > 0
-                                                                    ? 'bg-blue-900/30 text-blue-400 border-blue-900'
-                                                                    : reward.stock === -1
-                                                                        ? 'bg-purple-900/30 text-purple-400 border-purple-900'
-                                                                        : 'bg-red-900/30 text-red-400 border-red-900'
-                                                                    }`}>
-                                                                    {reward.stock === -1 ? '∞ Infinite' : `Stock: ${reward.stock}`}
+                                                            {/* <div className="flex gap-2 mt-1">
+                                                                <span className="text-[10px] px-2 py-0.5 rounded border bg-blue-900/30 text-blue-400 border-blue-900">
+                                                                    Infinite Stock
                                                                 </span>
-                                                            </div>
+                                                            </div> */}
                                                         </div>
                                                     </div>
                                                     <button

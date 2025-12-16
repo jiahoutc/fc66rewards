@@ -445,6 +445,64 @@ export default function AdminDashboard() {
                             </div>
                         </div>
                     )}
+
+                    {activeTab === 'games' && (
+                        <div className="max-w-4xl">
+                            <h2 className="text-xl font-bold mb-6 text-gold">Game Settings & Pricing</h2>
+
+                            {/* Debug / Status UI */}
+                            {gameModes.length === 0 && (
+                                <div className="p-8 text-center bg-zinc-800 rounded border border-zinc-700">
+                                    <p className="text-gray-400 mb-2">Loading game settings...</p>
+                                    <p className="text-xs text-gray-600">If this persists, the database may not be synced.</p>
+                                    <button onClick={fetchGameModes} className="mt-4 text-xs text-blue-400 hover:text-blue-300 underline">Retry Fetch</button>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {gameModes.map((mode) => (
+                                    <div key={mode.id} className={`p-6 rounded-lg border ${mode.enabled ? 'bg-zinc-800 border-zinc-700' : 'bg-red-900/10 border-red-900/30'}`}>
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div>
+                                                <h3 className="text-lg font-bold text-white">{mode.category}</h3>
+                                                <p className="text-sm text-gray-500">{mode.enabled ? 'Active' : 'Disabled'}</p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs text-gray-500 uppercase">Status</span>
+                                                <button
+                                                    onClick={() => handleUpdateGameMode(mode.id, mode.cost, !mode.enabled)}
+                                                    className={`w-12 h-6 rounded-full p-1 transition-colors ${mode.enabled ? 'bg-green-600' : 'bg-zinc-700'}`}
+                                                >
+                                                    <div className={`w-4 h-4 rounded-full bg-white transition-transform ${mode.enabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-xs text-gray-400 mb-1">Cost per Play (Credits)</label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="number"
+                                                        value={mode.cost}
+                                                        onChange={(e) => {
+                                                            const newModes = gameModes.map(m => m.id === mode.id ? { ...m, cost: parseInt(e.target.value) || 0 } : m)
+                                                            setGameModes(newModes)
+                                                        }}
+                                                        onBlur={(e) => handleUpdateGameMode(mode.id, parseInt(e.target.value) || 0, mode.enabled)}
+                                                        className="input w-full bg-zinc-900 border-zinc-700"
+                                                    />
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-2">
+                                                    Users will be deducted this amount each time they play <b>{mode.category}</b>.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 

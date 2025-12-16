@@ -103,7 +103,6 @@ export default function AdminDashboard() {
 
     const [newRewardCategory, setNewRewardCategory] = useState('BOX')
     const [newRewardStock, setNewRewardStock] = useState(1)
-    const [newRewardPrice, setNewRewardPrice] = useState(1)
 
     const handleCreateReward = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -113,8 +112,7 @@ export default function AdminDashboard() {
                 name: newRewardName,
                 imageUrl: newRewardImage,
                 category: newRewardCategory,
-                stock: newRewardStock,
-                price: newRewardPrice
+                stock: newRewardStock
             }),
         })
         if (res.ok) {
@@ -122,7 +120,6 @@ export default function AdminDashboard() {
             setNewRewardImage('')
             setNewRewardCategory('BOX')
             setNewRewardStock(1)
-            setNewRewardPrice(1)
             fetchRewards()
         }
     }
@@ -366,16 +363,6 @@ export default function AdminDashboard() {
                                                     onChange={(e) => setNewRewardStock(parseInt(e.target.value))}
                                                 />
                                             </div>
-                                            <div>
-                                                <label className="block text-xs text-gray-400 mb-1">Price (Credits)</label>
-                                                <input
-                                                    type="number"
-                                                    placeholder="1"
-                                                    className="input w-full bg-zinc-900 border-zinc-700"
-                                                    value={newRewardPrice}
-                                                    onChange={(e) => setNewRewardPrice(parseInt(e.target.value))}
-                                                />
-                                            </div>
 
                                             {/* Game Specific Settings Placeholder */}
                                             {newRewardCategory === 'WHEEL' && (
@@ -418,9 +405,6 @@ export default function AdminDashboard() {
                                                                         : 'bg-red-900/30 text-red-400 border-red-900'
                                                                     }`}>
                                                                     {reward.stock === -1 ? '∞ Infinite' : `Stock: ${reward.stock}`}
-                                                                </span>
-                                                                <span className="text-[10px] px-2 py-0.5 rounded border bg-yellow-900/30 text-yellow-400 border-yellow-900">
-                                                                    Price: {reward.price || 1}
                                                                 </span>
                                                             </div>
                                                         </div>
